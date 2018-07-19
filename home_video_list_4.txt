@@ -1,0 +1,4 @@
+/home/ubuntu/rocketml-dev/data/home-videos/santi_lr_1.MOV
+/home/ubuntu/rocketml-dev/data/home-videos/santi_lr_2.MOV
+/home/ubuntu/rocketml-dev/data/home-videos/santi_lr_3.MOV
+/home/ubuntu/rocketml-dev/data/home-videos/santi_lr_5.MOV
