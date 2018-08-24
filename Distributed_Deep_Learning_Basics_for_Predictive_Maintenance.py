@@ -13,6 +13,7 @@
 
 
 import keras
+from keras import backend as K
 
 
 # In[2]:
@@ -20,7 +21,7 @@ import keras
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # Setting seed for reproducability
 np.random.seed(1234)  
@@ -33,10 +34,15 @@ from keras.layers import Dense, Dropout, LSTM, Activation
 import tensorflow as tf
 import horovod.keras as hvd
 
-# ## Data Ingestion
-# In the following section, we ingest the training, test and ground truth datasets from azure storage. The training data consists of multiple multivariate time series with "cycle" as the time unit, together with 21 sensor readings for each cycle. Each time series can be assumed as being generated from a different engine of the same type. The testing data has the same data schema as the training data. The only difference is that the data does not indicate when the failure occurs. Finally, the ground truth data provides the number of remaining working cycles for the engines in the testing data. You can find more details about the type of data used for this notebook at [Predictive Maintenance Template](https://gallery.cortanaintelligence.com/Collection/Predictive-Maintenance-Template-3).
+# Horovod: pin GPU to be used to process local rank (one GPU per process)
 hvd.init()
 
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+config.gpu_options.visible_device_list = str(hvd.local_rank())
+K.set_session(tf.Session(config=config))
+# ## Data Ingestion
+# In the following section, we ingest the training, test and ground truth datasets from azure storage. The training data consists of multiple multivariate time series with "cycle" as the time unit, together with 21 sensor readings for each cycle. Each time series can be assumed as being generated from a different engine of the same type. The testing data has the same data schema as the training data. The only difference is that the data does not indicate when the failure occurs. Finally, the ground truth data provides the number of remaining working cycles for the engines in the testing data. You can find more details about the type of data used for this notebook at [Predictive Maintenance Template](https://gallery.cortanaintelligence.com/Collection/Predictive-Maintenance-Template-3).
 
 # In[3]:
 
@@ -321,10 +327,10 @@ if hvd.rank() == 0:
 
 print(model.summary())
 
-batch_size = 200*hvd.size()
+batch_size = 200
 # In[27]:
 # fit the network
-model.fit(seq_array, label_array, epochs=4, batch_size=batch_size, validation_split=0.05, verbose=1,callbacks=callbacks)
+model.fit(seq_array, label_array, epochs=10, batch_size=batch_size, validation_split=0.05, verbose=1,callbacks=callbacks)
           #callbacks = [keras.callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=0, verbose=0, mode='auto')])
 
 
