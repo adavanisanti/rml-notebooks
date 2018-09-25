@@ -1,0 +1,4 @@
+claim,text
+101,this is a claim
+102,lumbar fracture
+103,shoulder problem
