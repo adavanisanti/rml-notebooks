@@ -1,0 +1,14 @@
+{
+    "regex_replacements":
+    [
+        [ "(^president$)", "POTUS"],
+        [ "(^terror.*t$)", "perpetrator"],
+        [ "(^www.*)"     , "email_address"]
+    ],
+    "word_mapping":
+    [
+        [ "airplane,jet,carrier",    "flying object" ],
+        [ "airplanes,jets,carriers", "flying objects" ],
+        ["ppd,public", "person"]
+    ]
+}
