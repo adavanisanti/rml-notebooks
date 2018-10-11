@@ -56,6 +56,10 @@ for _file_id in range(_start,_end):
     processed_data=ds.stt(audio,fs)
     #processed_data=ds.stt(audio.flatten(),fs)
 
+    seperate_save=str(folder_name)+'-'+str(file_name)+'-data.txt'
+    with open(seperate_save,'a+') as f:
+           f.write(processed_data)  # read the entire audio file    
+    
     # Audio to text
     data_save='AudioData.txt'
     with open(data_save,'a+') as f:
