@@ -6,10 +6,9 @@ import subprocess
 import uuid
 import sys
 import warnings
-
+warnings.filterwarnings("ignore")
 from deepspeech.model import Model
 import scipy.io.wavfile as wav
-warnings.filterwarnings("ignore")
 
 def get_uuid(truncation=8):
     return str(uuid.uuid4())[:truncation]
@@ -18,16 +17,20 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-vf = sys.argv[1]
-audio_dir = "/home/ubuntu/deepspeech"
-file_list = [vf for i in range(size)] #file list, specify files
-#file_list=([audio_dir+'/12_sec_mono_16bit.wav',audio_dir+'/startalk_mono_16000.wav'])
+file_list = []
+# open file and read the content in a list
+with open('audio_list.txt', 'r') as filehandle:  
+    file_list = [current_file.rstrip() for current_file in filehandle.readlines()]
+
+audio_dir = "/home/ubuntu/SoundDir"
+
+#file_list=(['/home/ubuntu/SoundDir/chunk0_16bit.wav','/home/ubuntu/SoundDir/chunk1_16bit.wav','/home/ubuntu/SoundDir/chunk2_16bit.wav'])
+
 print(' ')
 print('File list:',file_list)
 
-
 _file_size = len(file_list)/size
-print('Number of files:',count(_file_size))
+print('Number of files:',_file_size)
 _start = rank*_file_size
 _end  = (rank+1)*_file_size
 print('Start:',_start,'End: ',_end)
@@ -41,23 +44,12 @@ for _file_id in range(_start,_end):
     vf = file_list[_file_id]    
     print('file: ',vf)
     print(' ')
-    #print('_file_id: ',_file_id)
-    #print('vf: ',vf)
     file_path,file_name = os.path.split(vf)
-    audio_file_name = file_name.split(".")[0] + "-" + get_uuid() + ".wav"
-    #print('audio_file_name: ',audio_file_name)
     folder_name = audio_dir + "/rank_" + str(rank)
     try:
         os.makedirs(folder_name)
     except:
         print("Directory %s exists \n"%folder_name)
-    #audio_file_name = folder_name + "/" + audio_file_name
-    #print(audio_file_name,file_name,file_path)
-    
-    # Create Audio file using ffmpeg
-    #av_call = "ffmpeg -i " + vf + " -acodec pcm_s16le -ac 1 -ar 16000 " + audio_file_name
-    #print('av_call: ',av_call)
-    #subprocess.call(av_call.split(),stderr=open(os.devnull,'wb'), stdout=open(os.devnull,'wb'))
                 #model location                   alphabet file
     ds = Model('/home/ubuntu/deepspeech/models/output_graph.pb', 26, 9, '/home/ubuntu/deepspeech/models/alphabet.txt', 500)
     fs, audio = wav.read(vf)
@@ -65,10 +57,9 @@ for _file_id in range(_start,_end):
     #processed_data=ds.stt(audio.flatten(),fs)
 
     # Audio to text
-    data_save=str(folder_name)+'-'+str(file_name)+'-data.txt'
-    with open(data_save,'a') as f:
-           f.write(processed_data)  # read the entire audio file
-            
+    data_save='AudioData.txt'
+    with open(data_save,'a+') as f:
+           f.write(processed_data+'\r\r')  # read the entire audio file     
     try:
         print('\nDeepSpeech says, "...'+str(processed_data)+'..."\n\nThe data has been stored in file: '+str(data_save)+'\n')
     except:
