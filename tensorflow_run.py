@@ -39,6 +39,8 @@ class DataSet(object):
     def load(self, file):
         '''
         '''
+        self.print_iter_counter=0
+	self.printcounter=0
         self.ins_num = 0 #<set at zero
         f = open(file, "r")
         self.y = []
@@ -65,7 +67,11 @@ class DataSet(object):
             self.ins_feature_interval.append(self.ins_feature_interval[-1]+ len(tokens)-1)
             #print(len(self.ins_feature_interval))
             for feature in tokens:#(len(tokens)~16
-              #  print(feature)
+                self.printcounter+= 1
+                self.print_iter_counter+=1
+                if (self.printcounter==100000):
+                    print(feature,'Count:',self.print_iter_counter)
+                    self.printcounter=0
                 if regexp.search(feature):#if there is a colon in feature
                     self.max_token.append(feature)#check on size
                     feature_id, feature_value = feature.split(":") #split on colon
@@ -73,6 +79,7 @@ class DataSet(object):
                         self.feature_ids.append(int(feature_id))#append to feature ids
                         self.feature_values.append(float(feature_value)) #append feature values
             self.ins_num += 1 #set ins_num to 1
+	self.print_iter_counter=0
         self.feature_num=max(self.feature_ids)#modify feature_num to max of ids (maximum # of features)
         #self.max_ins_feature_interval=max(self.ins_feature_interval)
         print('the max number of features:',self.feature_num)
