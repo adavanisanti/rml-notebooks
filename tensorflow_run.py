@@ -25,8 +25,8 @@ learning_rate =  0.001
 max_iter = 100
 batch_size = 100
 
-train_file=os.getcwd()+'/avazu-app.t'
-test_file=os.getcwd()+'/avazu-app.tr'
+train_file=os.getcwd()+'/a9a'
+test_file=os.getcwd()+'/a9a.t'
 
 class DataSet(object):
     def __init__(self):
