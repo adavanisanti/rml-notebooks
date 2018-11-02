@@ -50,20 +50,19 @@ class DataSet(object):
         for line in f.readlines():#iterating through open file
             regexp = re.compile(r':')#<---If feature has a colon then do
             tokens = line.split(" ")#split lines in the file
-            #tokens.remove('\n')
+            tokens.remove('\n')
             #print(tokens[0])
             self.y.append(float(tokens[0]))#append to y the first value in tokens (+1,-1,1)
-            try:
-                tokens[-1] = tokens[-1].strip()#<----remove '\n'
-                tokens.remove('') #<---remove '' empty in list
-            except:
-                pass
-            
-            #   last value in list is that value + (line splits -1)<--maybe adjusting for return (\n) or y value 
+    #   last value in list is that value + (line splits -1)<--maybe adjusting for return (\n) or y value 
             #print(self.ins_feature_interval[-1]+ len(tokens)-1)#<----stacks the batch sizes
             self.ins_feature_interval.append(self.ins_feature_interval[-1]+ len(tokens)-1)
             #print(len(self.ins_feature_interval))
             for feature in tokens:#(len(tokens)~16
+                try:
+                    feature = ''.join(feature.split())
+                    feature[-1] = feature[-1].strip()#<----remove '\n'
+                except:
+                    pass
                 self.printcounter+= 1
                 self.print_iter_counter+=1
                 if (self.printcounter==200000):
@@ -72,8 +71,11 @@ class DataSet(object):
                 if regexp.search(feature):#if there is a colon in feature
                     #self.max_token.append(feature)#check on size
                     feature_id, feature_value = feature.split(":") #split on colon
-                    if feature_id:
+                    #print(feature_value)
+                    if feature_id.isdigit():
                         self.feature_ids.append(int(feature_id))#append to feature ids
+                        #print(feature_id)
+                    if feature_value.isdigit():
                         self.feature_values.append(float(feature_value)) #append feature values
             self.ins_num += 1 #set ins_num to 1
         #housecleaning
@@ -110,7 +112,7 @@ class DataSet(object):
         sparse_shape = []
         max_feature_num = 0
         for i in range(begin, end):#within range begin, end
-        #              15,461,906,1351                  0,446,891,1338 =~15 supposed to be length of token
+        #           15,461,906,1351          0,446,891,1338 =~15 supposed to be length of token
         #          (token length + range number +1) - (token length + range number)
             feature_num = self.ins_feature_interval[i + 1] - self.ins_feature_interval[i]
             if feature_num > max_feature_num:
