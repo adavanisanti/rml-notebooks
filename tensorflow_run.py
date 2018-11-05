@@ -20,7 +20,16 @@ from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
+####################Splitting Data File################
+input_file=os.getcwd()+'\\a9a'
 
+X,y=get_data(input_file)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+dump_svmlight_file(X_train, y_train,'train_file')#%80
+dump_svmlight_file(X_test, y_test,'test_file')#%20
+print('Data file split.')
+#######################################################
 learning_rate =  0.001
 max_iter = 100
 batch_size = 100
@@ -147,13 +156,13 @@ class DataSet(object):
 
 class BinaryLogisticRegression(object):
     def __init__(self, feature_num):
-    self.feature_num = feature_num
-    self.sparse_index = tf.placeholder(tf.int64)
-    self.sparse_ids = tf.placeholder(tf.int64)
-    self.sparse_values = tf.placeholder(tf.float32)
-    self.sparse_shape = tf.placeholder(tf.int64)
-    self.w = tf.Variable(tf.random_normal([self.feature_num, 1], stddev=0.1))
-    self.y = tf.placeholder("float", [None, 1])
+        self.feature_num = feature_num
+        self.sparse_index = tf.placeholder(tf.int64)
+        self.sparse_ids = tf.placeholder(tf.int64)
+        self.sparse_values = tf.placeholder(tf.float32)
+        self.sparse_shape = tf.placeholder(tf.int64)
+        self.w = tf.Variable(tf.random_normal([self.feature_num, 1], stddev=0.1))
+        self.y = tf.placeholder("float", [None, 1])
 
     def forward(self):
         return tf.nn.embedding_lookup_sparse(self.w,tf.SparseTensor(self.sparse_index, self.sparse_ids, self.sparse_shape),tf.SparseTensor(self.sparse_index, self.sparse_values, self.sparse_shape),combiner="sum")
