@@ -39,8 +39,8 @@ learning_rate =  0.001
 max_iter = 100
 batch_size = 100
 
-train_file=os.getcwd()+'train_file'
-test_file=os.getcwd()+'test_file'
+train_file=os.getcwd()+'/train_file'
+test_file=os.getcwd()+'/test_file'
 
 class DataSet(object):
     def __init__(self):
