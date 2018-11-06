@@ -14,6 +14,7 @@ import tensorflow as tf
 #Scikitlearn
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file
+from sklearn.datasets import dump_svmlight_file
 from scipy.sparse import coo_matrix,csr_matrix,lil_matrix
 from sklearn import linear_model
 from sklearn.linear_model import LogisticRegression
@@ -21,7 +22,11 @@ from sklearn import metrics
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 ####################Splitting Data File################
-input_file=os.getcwd()+'\\a9a'
+def get_data(file):
+    data = load_svmlight_file(file)
+    return data[0], data[1]
+
+input_file=os.getcwd()+'/a9a'
 
 X,y=get_data(input_file)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -34,68 +39,27 @@ learning_rate =  0.001
 max_iter = 100
 batch_size = 100
 
-train_file=os.getcwd()+'/a9a'
-test_file=os.getcwd()+'/a9a.t'
+train_file=os.getcwd()+'train_file'
+test_file=os.getcwd()+'test_file'
 
 class DataSet(object):
     def __init__(self):
         self.iter = 0
         self.epoch_pass = 0
 
+    d def get_data(file):
+        data = load_svmlight_file(file)
+        return data[0], data[1]    
+    
     def load(self, file):
-        '''
-        '''
-        self.print_iter_counter=0
-        self.printcounter=0
-        self.ins_num = 0 #<set at zero
-        f = open(file, "r")
-        self.y = []
-        self.feature_ids = []
-        self.feature_values = []
-        self.ins_feature_interval = []
-        #self.max_ins_feature_interval = []
-        self.ins_feature_interval.append(0)#makes zero the starting value in ins_feature_interval
-        #self.max_token=[]
-        for line in f.readlines():#iterating through open file
-            regexp = re.compile(r':')#<---If feature has a colon then do
-            tokens = line.split(" ")#split lines in the file
-            tokens.remove('\n')
-            #print(tokens[0])
-            self.y.append(float(tokens[0]))#append to y the first value in tokens (+1,-1,1)
-    #   last value in list is that value + (line splits -1)<--maybe adjusting for return (\n) or y value 
-            #print(self.ins_feature_interval[-1]+ len(tokens)-1)#<----stacks the batch sizes
-            self.ins_feature_interval.append(self.ins_feature_interval[-1]+ len(tokens)-1)
-            #print(len(self.ins_feature_interval))
-            for feature in tokens:#(len(tokens)~16
-                try:
-                    feature = ''.join(feature.split())
-                    feature[-1] = feature[-1].strip()#<----remove '\n'
-                except:
-                    pass
-                self.printcounter+= 1
-                self.print_iter_counter+=1
-                if (self.printcounter==200000):
-                    print(feature,'Count:',self.print_iter_counter)
-                    self.printcounter=0
-                if regexp.search(feature):#if there is a colon in feature
-                    #self.max_token.append(feature)#check on size
-                    feature_id, feature_value = feature.split(":") #split on colon
-                    #print(feature_value)
-                    if feature_id.isdigit():
-                        self.feature_ids.append(int(feature_id))#append to feature ids
-                        #print(feature_id)
-                    if feature_value.isdigit():
-                        self.feature_values.append(float(feature_value)) #append feature values
-            self.ins_num += 1 #set ins_num to 1
-        #housecleaning
-        tokens=''
-        self.print_iter_counter=0
-        self.printcounter=0
-        f=()
-        
-        self.feature_num=max(self.feature_ids)#modify feature_num to max of ids (maximum # of features)
-        #self.max_ins_feature_interval=max(self.ins_feature_interval)
-        print('the max number of features:',self.feature_num)
+        X, y=get_data(file)
+        self.feature_num=X.shape[1] #X.shape[1]
+        self.ins_num =X.shape[0] #equivalent to .shape[0] in csr format
+        self.y = list(y)
+        self.feature_ids = list(X.indices) #equivalent to .indices in csr format
+        self.feature_values = list(X.data) #equivalent to .data in csr format
+        self.ins_feature_interval = list(X.indptr)
+        self.ins_feature_interval_diff = [j-i for i, j in zip(X_indptr[:-1], X_indptr[1:])] #equivalent to .indptr in csr format
     
 
     def mini_batch(self, batch_size):
