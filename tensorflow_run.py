@@ -47,7 +47,7 @@ class DataSet(object):
         self.iter = 0
         self.epoch_pass = 0
 
-    d def get_data(file):
+    def get_data(file):
         data = load_svmlight_file(file)
         return data[0], data[1]    
     
