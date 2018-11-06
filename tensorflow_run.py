@@ -59,7 +59,7 @@ class DataSet(object):
         self.feature_ids = list(X.indices) #equivalent to .indices in csr format
         self.feature_values = list(X.data) #equivalent to .data in csr format
         self.ins_feature_interval = list(X.indptr)
-        self.ins_feature_interval_diff = [j-i for i, j in zip(X_indptr[:-1], X_indptr[1:])] #equivalent to .indptr in csr format
+        self.ins_feature_interval_diff = [j-i for i, j in zip(X.indptr[:-1], X.indptr[1:])] #equivalent to .indptr in csr format
     
 
     def mini_batch(self, batch_size):
