@@ -13,8 +13,10 @@ import tensorflow as tf
 
 #Scikitlearn
 from sklearn.model_selection import train_test_split
+
 from sklearn.datasets import load_svmlight_file
 from sklearn.datasets import dump_svmlight_file
+
 from scipy.sparse import coo_matrix,csr_matrix,lil_matrix
 from sklearn import linear_model
 from sklearn.linear_model import LogisticRegression
@@ -26,7 +28,7 @@ def get_data(file):
     data = load_svmlight_file(file)
     return data[0], data[1]
 
-input_file=os.getcwd()+'/a9a'
+input_file=os.getcwd()+'/a8a'
 
 X,y=get_data(input_file)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -80,44 +82,14 @@ class DataSet(object):
 
     def slice(self, begin, end):
         sparse_index = []
-        sparse_ids = []
-        sparse_values = []
-        sparse_shape = []
-        max_feature_num = 0
-        for i in range(begin, end):#within range begin, end
-        #           15,461,906,1351          0,446,891,1338 =~15 supposed to be length of token
-        #          (token length + range number +1) - (token length + range number)
-            feature_num = self.ins_feature_interval[i + 1] - self.ins_feature_interval[i]
-            if feature_num > max_feature_num:
-                max_feature_num = feature_num
-                                #       0,446,891,1338                  15,461,906,1351
-            #(token length + range number) ,       (token length + range number +1)
-            #self.max_ins_feature_interval-len(self.feature_ids)<-------------------
-            #print(self.ins_feature_interval[i],self.ins_feature_interval[i + 1])
-            #print(self.feature_ids[i])
-            for j in range(self.ins_feature_interval[i], self.ins_feature_interval[i + 1]):
-            #print(j,(len(self.feature_ids)))
-            #print(self.ins_feature_interval[i + 1])
-            #print(range(self.ins_feature_interval[i], self.ins_feature_interval[i + 1]))
-            #15 vals:                  0  , 0-14,446-460,891-905
-                sparse_index.append([i - begin, j - self.ins_feature_interval[i]]) # index must be accent
-                #[0, 0]-[0, 14][0, 0]-[0, 12]
-                #print([i - begin, j - self.ins_feature_interval[i]])
-                sparse_ids.append(self.feature_ids[j])
-                sparse_values.append(self.feature_values[j])
-        sparse_shape.append(end - begin)
-        #print(end - begin)#<-----30
-        sparse_shape.append(max_feature_num)
-        #print(max_feature_num)#<-----15
-        #       Creates array shape of 30,1 of y values  (30, 1)
+        sparse_ids = list(train_set.feature_ids[train_set.ins_feature_interval[begin]:train_set.ins_feature_interval[end]])
+        sparse_values = list(self.feature_values[self.ins_feature_interval[begin]:self.ins_feature_interval[end]])
+        sparse_shape = [end - begin,max(self.ins_feature_interval_diff)]
         y = np.array(self.y[begin:end]).reshape((end - begin, 1))
-        #begin:0,30,60,90,120,150,180,210 intervals of 30
-        #end: 30,60,90,120,150,180,210,240
-
-        #            0            0                       0                 30            30
-        #print(len(sparse_index), len(sparse_ids), len(sparse_values), len(sparse_shape), len(y))
+        for i in range(begin, end):
+            for j in range(self.ins_feature_interval[i], self.ins_feature_interval[i + 1]):
+                sparse_index.append([i - begin, j - self.ins_feature_interval[i]]) # index must be accent
         return (sparse_index, sparse_ids, sparse_values, sparse_shape, y)
-
 class BinaryLogisticRegression(object):
     def __init__(self, feature_num):
         self.feature_num = feature_num
@@ -135,7 +107,6 @@ mem_baseline1=psutil.virtual_memory() #  physical memory usage
 print('Here is the memory baseline prior to importing data:\n\n',mem_baseline1)
 
 start = time.time()
-
 train_set = DataSet()
 train_set.load(train_file)
 
@@ -144,7 +115,6 @@ exec_time1=(end - start)
 print('\nThe time taken to import and prepare training data for Tensorflow is:',exec_time1)
 
 start = time.time()
-
 test_set = DataSet()
 test_set.load(test_file)
 feature_num=test_set.feature_num
@@ -157,13 +127,9 @@ mem_baseline2=psutil.virtual_memory() #  physical memory usage
 print('Here is the memory usage after importing data:\n',mem_baseline2)
 
 model = BinaryLogisticRegression(feature_num)
-
 y = model.forward()
-
 loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=y, logits=model.y))
-
 optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
-
 probability_output = tf.nn.sigmoid(y)
 
 session = tf.Session()
@@ -171,7 +137,7 @@ init_all_variable = tf.global_variables_initializer()
 init_local_variable = tf.local_variables_initializer()
 session.run([init_all_variable, init_local_variable])
 
-num_passes=1
+num_passes=2
 start = time.time()
 end_list=[]
 for i in range(0,num_passes):
