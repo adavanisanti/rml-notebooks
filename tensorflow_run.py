@@ -24,46 +24,41 @@ from sklearn import metrics
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 ####################Splitting Data File################
-def get_data(file):
-    data = load_svmlight_file(file)
-    return data[0], data[1]
+#def get_data(file):
+#    data = load_svmlight_file(file)
+#    return data[0], data[1]
 
-input_file=os.getcwd()+'/a8a'
+#input_file=os.getcwd()+'/a8a'
 
-X,y=get_data(input_file)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#X,y=get_data(input_file)
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-dump_svmlight_file(X_train, y_train,'train_file')#%80
-dump_svmlight_file(X_test, y_test,'test_file')#%20
-print('Data file split.')
+#dump_svmlight_file(X_train, y_train,'train_file')#%80
+#dump_svmlight_file(X_test, y_test,'test_file')#%20
+#print('Data file split.')
 #######################################################
 learning_rate =  0.001
 max_iter = 100
 batch_size = 100
 
-train_file=os.getcwd()+'/train_file'
-test_file=os.getcwd()+'/test_file'
+train_file=os.getcwd()+'/a9a'
+test_file=os.getcwd()+'/a9a.txt'
 
 class DataSet(object):
     def __init__(self):
         self.iter = 0
         self.epoch_pass = 0
 
-    def get_data(file):
-        data = load_svmlight_file(file)
-        return data[0], data[1]    
-    
-    def load(self, file):
-        X, y=get_data(file)
-        self.feature_num=X.shape[1] #X.shape[1]
-        self.ins_num =X.shape[0] #equivalent to .shape[0] in csr format
+    def load(self, file,length):
+        X, y=load_svmlight_file(file,n_features=123,zero_based=True,length=length)
+        self.feature_num=X.shape[1] #The number of cols in X set
+        self.ins_num =X.shape[0] #The number of rows in X set
         self.y = list(y)
-        self.feature_ids = list(X.indices) #equivalent to .indices in csr format
-        self.feature_values = list(X.data) #equivalent to .data in csr format
-        self.ins_feature_interval = list(X.indptr)
-        self.ins_feature_interval_diff = [j-i for i, j in zip(X.indptr[:-1], X.indptr[1:])] #equivalent to .indptr in csr format
-    
-
+        self.feature_ids = list(X.indices) #column index
+        self.feature_value = list(X.data) #values
+        self.ins_feature_interval =list(X.indptr) #row starts 
+        self.ins_feature_interval_diff = [(j-i) for i, j in zip(X.indptr[:-1], X.indptr[1:])] #difference between row start records
+       
     def mini_batch(self, batch_size):
         begin = self.iter #begins as 0 as defined above
         end = self.iter #starts with 0 as defined above
@@ -73,23 +68,21 @@ class DataSet(object):
             self.epoch_pass += 1 #add +1 to epoch_pass 
         else:
             end += batch_size#add batch size to end, which should be equal to batch size
-            #print('end:',end)
-            #print('batch_size:',batch_size)
             self.iter = end#set self.iter to batch size
-            #(begin, end)setting bounds moving across batch length in data
-            #print((begin, end))#slicing action of data (0, 15) (15, 30) (30, 45) (60,...
         return self.slice(begin, end)
 
     def slice(self, begin, end):
         sparse_index = []
         sparse_ids = list(train_set.feature_ids[train_set.ins_feature_interval[begin]:train_set.ins_feature_interval[end]])
-        sparse_values = list(self.feature_values[self.ins_feature_interval[begin]:self.ins_feature_interval[end]])
+        sparse_values = list(self.feature_value[self.ins_feature_interval[begin]:self.ins_feature_interval[end]])
         sparse_shape = [end - begin,max(self.ins_feature_interval_diff)]
         y = np.array(self.y[begin:end]).reshape((end - begin, 1))
         for i in range(begin, end):
             for j in range(self.ins_feature_interval[i], self.ins_feature_interval[i + 1]):
                 sparse_index.append([i - begin, j - self.ins_feature_interval[i]]) # index must be accent
         return (sparse_index, sparse_ids, sparse_values, sparse_shape, y)
+       #paper and pen
+
 class BinaryLogisticRegression(object):
     def __init__(self, feature_num):
         self.feature_num = feature_num
@@ -108,7 +101,7 @@ print('Here is the memory baseline prior to importing data:\n\n',mem_baseline1)
 
 start = time.time()
 train_set = DataSet()
-train_set.load(train_file)
+train_set.load(train_file,length=32561) 
 
 end = time.time()
 exec_time1=(end - start)
@@ -116,8 +109,7 @@ print('\nThe time taken to import and prepare training data for Tensorflow is:',
 
 start = time.time()
 test_set = DataSet()
-test_set.load(test_file)
-feature_num=test_set.feature_num
+train_set.load(test_file,length=16281)
 
 end = time.time()
 exec_time2=(end - start)
