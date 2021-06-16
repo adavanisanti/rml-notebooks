@@ -1,10 +1,10 @@
                         precision    recall  f1-score   support
 
-           alt.atheism       0.95      0.80      0.87       319
-         comp.graphics       0.87      0.98      0.92       389
-               sci.med       0.94      0.89      0.91       396
-soc.religion.christian       0.90      0.95      0.93       398
+           alt.atheism       0.95      0.65      0.77       319
+         comp.graphics       0.66      0.98      0.79       389
+               sci.med       0.95      0.64      0.77       396
+soc.religion.christian       0.81      0.89      0.85       398
 
-              accuracy                           0.91      1502
-             macro avg       0.91      0.91      0.91      1502
-          weighted avg       0.91      0.91      0.91      1502
+              accuracy                           0.80      1502
+             macro avg       0.84      0.79      0.80      1502
+          weighted avg       0.84      0.80      0.80      1502
